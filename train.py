@@ -13,8 +13,8 @@ import queue
 import threading
 from datetime import datetime
 
-seq_len = 16
-batch_size = 5
+seq_len = 8
+batch_size = 1
 n_epoch = 1000
 learning_rate = 0.1
 decay_steps = 15000
@@ -22,7 +22,7 @@ decay_rate  = 0.1
 weight_decay= 0.004
 print_freq = 20
 queue_num = 4
-start_step = 1
+start_step = 0
 
 num_classes = 249
 dataset_name = 'isogr_ rgb'
@@ -87,7 +87,6 @@ sess.run(tf.global_variables_initializer())
 # create a summary
 merged = tf.summary.merge_all()
 train_writer = tf.summary.FileWriter('train_log', sess.graph)
-
 # load the parameters from the pre-trained model
 if start_step>0:
     load_params = tl.files.load_npz(path='models/',name='model-1000.npz')
@@ -154,7 +153,8 @@ def training():
             feed_dict.update(networks.all_drop)
             #start training
             start_time = time.time()
-            summary,acc,loss,lr_value,op = sess.run([merged,networks_accu,cost,lr,train_op],feed_dict=feed_dict)            
+            summary,acc,loss,lr_value,op = sess.run([merged,networks_accu,cost,lr,train_op],feed_dict=feed_dict)
+            feed_dict.update(networks.all_drop)
             duration=time.time()-start_time
             step+=1
             total_accu+=acc
@@ -182,9 +182,7 @@ def training():
                 #                    save_dir="models",
                 #                    printable=True)
                 tl.files.save_npz(networks.all_params,name="models/model-%d.npz"%step,sess=sess)
-                print("Model saved in file %s_model.ckpt")
-
-
+                print("Model saved in file model.npz")
 
     sess.close()
 
